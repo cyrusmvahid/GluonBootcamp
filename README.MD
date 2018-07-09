@@ -1,9 +1,8 @@
 # MXNet/Gluon Bootcamp
 
 ## Fundamentals
-| Mod ID  | Title                                            | Duration |
-| ------- | -------------------------------------------------|--------- |
-| 0       | MXNet in 60 minutes                              | 60 m     |
+| Mod ID  | Title                                            | Description                                          | Duration |
+| ------- | -------------------------------------------------|----------------------------------------------------- |--------- | | 0       | MXNet in 60 minutes                              | In this module fundamentals of mxnet suchas     | 60 min
 | Content Cell  | Content Cell  |
 
 
