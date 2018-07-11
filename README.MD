@@ -106,6 +106,6 @@ incorporate all the material from the first three days. If participants have
 prepared datasets of significant size we attempt to optimize the distributed
 training for large batch sizes|7 hours|all|
 
-```{.python .input  n=1}
-!notedown README.ipynb --to markdown > README.md
+```{.python .input  n=3}
+!notedown README.ipynb --to markdown > README.MD
 ```
