@@ -1,6 +1,7 @@
 import mxnet as mx
 from mxnet import nd, autograd, gluon
 import os
+import re
 
 def get_first_file_path_in_dir(input_dir):
     for root, dirs, files in os.walk(input_dir):
@@ -90,7 +91,7 @@ def train(hyperparameters,channel_input_dirs,num_gpus,hosts,current_host,**kwarg
         else:
             kvstore = 'device'
     print('kvstore {}'.format(kvstore))
-    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': 0.0001}, kvstore=kvstore)
+    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': hyperparameters['learning_rate']}, kvstore=kvstore)
     
     epochs = hyperparameters['epochs']
     loss_sequence = []
