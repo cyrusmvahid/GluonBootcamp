@@ -2,6 +2,7 @@ import mxnet as mx
 from mxnet import nd, autograd, gluon
 import os
 import re
+import time
 
 def get_first_file_path_in_dir(input_dir):
     for root, dirs, files in os.walk(input_dir):
@@ -96,8 +97,11 @@ def train(hyperparameters,channel_input_dirs,num_gpus,hosts,current_host,**kwarg
     epochs = hyperparameters['epochs']
     loss_sequence = []
     num_batches = num_examples / batch_size
+    
+    train_start_time = time.time()
 
     for e in range(epochs):
+        epoch_start_time = time.time()
         cumulative_loss = 0
         # inner loop
         for i, (data, label) in enumerate(train_data):
@@ -109,5 +113,9 @@ def train(hyperparameters,channel_input_dirs,num_gpus,hosts,current_host,**kwarg
             loss.backward()
             trainer.step(batch_size)
             cumulative_loss += nd.mean(loss).asscalar()
-        print("Epoch %s, loss: %s" % (e, cumulative_loss / num_examples))
+        epoch_end_time = time.time()
+        print("Epoch {}, loss: {:.6f}, time {:.6f} s".format(e, cumulative_loss / num_examples,epoch_end_time-epoch_start_time))
         loss_sequence.append(cumulative_loss)
+        
+    train_end_time = time.time()
+    print("Training complete in {:.6f} seconds".format(train_end_time - train_start_time)) 
