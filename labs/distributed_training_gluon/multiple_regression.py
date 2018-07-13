@@ -88,7 +88,10 @@ def train(hyperparameters,channel_input_dirs,num_gpus,hosts,current_host,**kwarg
     kvstore = 'local'
     if num_gpus > 0:
         if len(hosts) > 1:
-            kvstore = 'dist_device_sync'
+            if hyperparameters['sync'] == True:
+                kvstore = 'dist_device_sync'
+            else:
+                kvstore = 'dist_async'
         else:
             kvstore = 'device'
     print('kvstore {}'.format(kvstore))
