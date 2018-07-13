@@ -131,10 +131,11 @@ def train(
     tic = time.time()
     for e in range(epochs):
         metric.reset()
+        epoch_start_time = time.time()
         for data, label in train_data_loader:
             batch_forward_backward(data,label,ctx,net,trainer,batch_size,metric)
         name, value = metric.get()
-        print("Epoch {}: {} {}".format(e, name, value))
+        print("Epoch {}: {} {} time {:.4f} s".format(e, name, value, time.time()-epoch_start_time))
 
     # Calculate the test RMSE when training has finished
     validate(train_data_loader,metric,ctx,net)
@@ -150,6 +151,8 @@ def train(
 def validate(data_loader,metric,ctx,net):
     metric.reset()
     for data, label in data_loader:
+        data = data.as_in_context(ctx[0])
+        label = label.as_in_context(ctx[0])
         metric.update(label,net(data))
     name, value = metric.get()
     print('Final {} {}'.format(name,value))
@@ -157,13 +160,11 @@ def validate(data_loader,metric,ctx,net):
 
 def batch_forward_backward(data, label, ctx, net, trainer, batch_size, metric):
     l1 = gluon.loss.L1Loss()
-    losses = []
-    outputs = []
+    data = data.as_in_context(ctx[0])
+    label = label.as_in_context(ctx[0])
     with autograd.record():
         z = net(data)
         loss = l1(z,label)
-        losses.append(loss)
-        outputs.append(z)
-    autograd.backward(losses)
+    autograd.backward(loss)
     trainer.step(batch_size)
-    metric.update(label,outputs)
+    metric.update(label,z)
