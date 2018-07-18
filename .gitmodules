@@ -1,6 +1,6 @@
-[submodule "DeepLearningWithMXNetGluon"]
-	path = DeepLearningWithMXNetGluon
+[submodule "labs/gluon_crash_course"]
+	path = labs/gluon_crash_course
 	url = https://github.com/thomelane/DeepLearningWithMXNetGluon
-[submodule "labs/lstnet/LSTNet-Gluon"]
-	path = labs/lstnet/LSTNet-Gluon
+[submodule "labs/lstnet"]
+	path = labs/lstnet
 	url = https://github.com/thomelane/LSTNet-Gluon
