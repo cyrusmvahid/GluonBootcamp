@@ -54,7 +54,8 @@ class TradingHistoryList():
         for i in range(len(self.trainings_histories)):
             self.trainings_histories[i].update(values[i])
 
-    def plot(self, colors, ):
+    def plot(self, colors=None):
+        print("PATH: {}".format(self._save_path))
         if colors == None:
             colors = visual_utilities.random_hex_colours(2)
         ths = list(self._trainings_histories)
@@ -64,7 +65,7 @@ class TradingHistoryList():
             min_val = min(min_val, nd.array(th.history[th.labels[1]]).min().asscalar()) // 2
             max_val = nd.array(th.history[th.labels[0]]).max().asscalar()
             max_val = max(max_val, nd.array(th.history[th.labels[1]]).max().asscalar()) * 2
-            th.plot(labels=th.labels, y_lim=(min_val, max_val), colors=colors, save_path=self._save_path)
+            th.plot(labels=th.labels, y_lim=(min_val, max_val), colors=colors)
 
 
 if __name__ == '__main__':
