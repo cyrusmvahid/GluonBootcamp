@@ -1,2 +1,3 @@
 *.gz
 **/*.gz
+scikit_bring_your_own/container/local_test/test_dir/model/decision-tree-model.pkl
