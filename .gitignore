@@ -107,3 +107,4 @@ venv
 _*.*
 
 .DS_Store
+data/output/lstnet_params.params
