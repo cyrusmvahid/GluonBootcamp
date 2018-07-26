@@ -1,3 +1,13 @@
+
+# Convert notebook to slide
+`jupyter nbconvert <your notebook> --to slides --reveal-prefix reveal.js
+`
+and then copy the html file to: `slides/note2slides`
+I have already placed reveal.js in the folder
+
+
+
+
 # MXNet/Gluon Bootcamp
 
 ## Setup
