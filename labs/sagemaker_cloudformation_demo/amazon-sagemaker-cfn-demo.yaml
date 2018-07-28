@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  TrainingInstanceType:
+    Description: Instance type to launch trained production model endpoint with. 
+    Type: String
+    Default: ml.c4.xlarge
+  ProductionInstanceType:
+    Description: Instance type to launch trained production model endpoint with. 
+    Type: String
+    Default: ml.c4.xlarge
+  SageMakerExecutionRole:
+    Description: ARN of IAM role SageMaker can assume to access model artifacts and docker image for training and deployment on ML compute instances.
+    Type: String
+  ModelPrefix: 
+    Description: Prefix to prepend to resources created for the model.
+    Type: String
+    Default: SageMaker-CFNDemo
+  BucketName:
+    Description: Name to create S3 bucket that will hold training data and model artifacts with. Must contain 'sagemaker' in name.
+    Type: String
+    Default: sagemaker-cfn-demo
+
+Resources:
+  CFNNotebookInstance:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      NotebookInstanceName: "SageMaker-CFNDemo"
+      InstanceType: "ml.t2.medium"
+      RoleArn: !Ref SageMakerExecutionRole
+
+Outputs:
+  NotebookInstance:
+    Description: Details about the SageMaker NotebookInstance
+    Value: !Ref CFNNotebookInstance
