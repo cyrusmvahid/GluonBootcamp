@@ -11905,67 +11905,52 @@ a.anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Checking-MXNet-version-after-upgrade">Checking MXNet version after upgrade<a class="anchor-link" href="#Checking-MXNet-version-after-upgrade">&#182;</a></h1>
+<h1 id="Training-a-Sentiment-Analysis-Model">Training a Sentiment Analysis Model<a class="anchor-link" href="#Training-a-Sentiment-Analysis-Model">&#182;</a></h1>
 </div>
 </div>
-</div><div class="fragment">
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[98]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">mxnet</span> <span class="k">as</span> <span class="nn">mx</span>
-<span class="n">mx</span><span class="o">.</span><span class="n">__version__</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[98]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>&#39;1.3.0&#39;</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div></div></section></section><section><section>
+</div></section></section><section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Import-statemetns">Import statemetns<a class="anchor-link" href="#Import-statemetns">&#182;</a></h1>
+<h2 id="Objective">Objective<a class="anchor-link" href="#Objective">&#182;</a></h2><ul>
+<li>Using the preprocessing we performed previously we can then use pretrained models to train a sentiment analysis on IMDB dataset</li>
+</ul>
+
+</div>
+</div>
+</div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Hyperparameters-&amp;-Environment">Hyperparameters &amp; Environment<a class="anchor-link" href="#Hyperparameters-&amp;-Environment">&#182;</a></h1>
 </div>
 </div>
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[99]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">mxnet</span> <span class="k">import</span> <span class="n">gluon</span>
-<span class="kn">import</span> <span class="nn">gluonnlp</span> <span class="k">as</span> <span class="nn">nlp</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
-<span class="kn">import</span> <span class="nn">itertools</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">mx</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">max_gpus</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">num_gpus</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_gpus</span><span class="p">,</span> <span class="n">mx</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">num_gpus</span><span class="p">())</span>
+<span class="n">dropout</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">language_model_name</span> <span class="o">=</span> <span class="s1">&#39;standard_lstm_lm_200&#39;</span>
+<span class="n">pretrained</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">*</span> <span class="n">num_gpus</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span> <span class="o">*</span> <span class="n">num_gpus</span>
+<span class="n">bucket_num</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">bucket_ratio</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">grad_clip</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">log_interval</span> <span class="o">=</span> <span class="mi">100</span>
+
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="p">[</span><span class="n">mx</span><span class="o">.</span><span class="n">gpu</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_gpus</span><span class="p">)]</span>
 </pre></div>
 
 </div>
@@ -11977,138 +11962,385 @@ a.anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Downloading-IMDB-Data-Set-&amp;-Instansiating-SimpleDataSet-Objects">Downloading IMDB Data Set &amp; Instansiating SimpleDataSet Objects<a class="anchor-link" href="#Downloading-IMDB-Data-Set-&amp;-Instansiating-SimpleDataSet-Objects">&#182;</a></h1>
+<h1 id="Building-the-Model">Building the Model<a class="anchor-link" href="#Building-the-Model">&#182;</a></h1><p><img src="https://gluon-nlp.mxnet.io/_images/samodel-v3.png" alt=""></p>
+
 </div>
 </div>
-</div><div class="fragment">
+</div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[100]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="k">import</span> <span class="n">randint</span>
-<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">IMDB</span><span class="p">(</span><span class="n">segment</span><span class="o">=</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;../data/&#39;</span><span class="p">)</span>
-<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">IMDB</span><span class="p">(</span><span class="n">segment</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="s1">&#39;../data/&#39;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">[</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20000</span><span class="p">)][</span><span class="mi">1</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">######################################### Model #########################################</span>
+<span class="k">class</span> <span class="nc">SentimentNet</span><span class="p">(</span><span class="n">gluon</span><span class="o">.</span><span class="n">Block</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding_block</span><span class="p">,</span> <span class="n">encoder_block</span><span class="p">,</span> <span class="n">dropout</span><span class="p">,</span>
+                 <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SentimentNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_scope</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">embedding_block</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder_block</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out_layer</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">HybridSequential</span><span class="p">()</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_layer</span><span class="o">.</span><span class="n">name_scope</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">out_layer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gluon</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">out_layer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gluon</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">valid_length</span><span class="p">):</span>
+        <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">nd</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">data</span><span class="p">),</span>
+                                          <span class="mf">0.2</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,)))</span>  <span class="c1"># Shape(T, N, C)</span>
+        <span class="c1"># Zero out the values with position exceeding the valid length.</span>
+        <span class="n">masked_encoded</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">SequenceMask</span><span class="p">(</span><span class="n">encoded</span><span class="p">,</span>
+                                         <span class="n">sequence_length</span><span class="o">=</span><span class="n">valid_length</span><span class="p">,</span>
+                                         <span class="n">use_sequence_length</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">agg_state</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">broadcast_div</span><span class="p">(</span><span class="n">nd</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">masked_encoded</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                                     <span class="n">nd</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">valid_length</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_layer</span><span class="p">(</span><span class="n">agg_state</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>10
-10
-7
-3
-10
-2
-10
-1
-1
-1
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div></div></section></section><section><section>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="SimpleDataset-Class-Hierarchy">SimpleDataset Class Hierarchy<a class="anchor-link" href="#SimpleDataset-Class-Hierarchy">&#182;</a></h1>
-</div>
-</div>
-</div><div class="fragment">
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[109]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">IMDB</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SimpleDataset</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>(&lt;class &#39;mxnet.gluon.data.dataset.SimpleDataset&#39;&gt;,)
-(&lt;class &#39;mxnet.gluon.data.dataset.Dataset&#39;&gt;,)
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div></div></section></section><section><section>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Setting-Max-Seq-Length-&amp;-Defining-Tokenizer">Setting Max Seq Length &amp; Defining Tokenizer<a class="anchor-link" href="#Setting-Max-Seq-Length-&amp;-Defining-Tokenizer">&#182;</a></h1>
-</div>
-</div>
-</div><div class="fragment">
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[103]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">length_clip</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ClipSequence</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
-<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SpacyTokenizer</span><span class="p">(</span><span class="s1">&#39;en&#39;</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div></div></section></section><section><section>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Pre-processing-Data">Pre-processing Data<a class="anchor-link" href="#Pre-processing-Data">&#182;</a></h1>
-</div>
-</div>
-</div><div class="fragment">
+</div></section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <ul>
-<li><code>preprocess(x)</code> <ul>
-<li>normalized label to 1 for positive and 0 for negative</li>
-<li>tokenized data</li>
-<li>clips the length</li>
-<li>returns tokenized data and label</li>
+<li><code>python mx.nd.array.SequenceMask(data, sequence_length, use_sequence_length, value=, out, name, **kwargs)</code>:
+Sets all elements outside the sequence to a constant value.</li>
+<li><code>python mxnet.ndarray.broadcast_div(lhs, rhs, out, name, **kwargs)</code>: Returns element-wise division of the input arrays with broadcasting.</li>
 </ul>
-</li>
-</ul>
+
+</div>
+</div>
+</div></section><section>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Model</span>
+<span class="n">lm_model</span><span class="p">,</span> <span class="n">vocab</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">language_model_name</span><span class="p">,</span>
+                                      <span class="n">dataset_name</span><span class="o">=</span><span class="s1">&#39;wikitext-2&#39;</span><span class="p">,</span>
+                                      <span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">,</span>
+                                      <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span>
+                                      <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
+<span class="n">net</span> <span class="o">=</span> <span class="n">SentimentNet</span><span class="p">(</span><span class="n">embedding_block</span><span class="o">=</span><span class="n">lm_model</span><span class="o">.</span><span class="n">embedding</span><span class="p">,</span>
+                   <span class="n">encoder_block</span><span class="o">=</span><span class="n">lm_model</span><span class="o">.</span><span class="n">encoder</span><span class="p">,</span>
+                   <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">out_layer</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">mx</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">Xavier</span><span class="p">(),</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">hybridize</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">####################### MODEL #######################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/home/ubuntu/anaconda3/envs/mxnet_p36/lib/python3.6/site-packages/mxnet/gluon/block.py:420: UserWarning: load_params is deprecated. Please use load_parameters.
+  warnings.warn(&#34;load_params is deprecated. Please use load_parameters.&#34;)
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+####################### MODEL #######################
+
+SentimentNet(
+  (embedding): HybridSequential(
+    (0): Embedding(33278 -&gt; 200, float32)
+  )
+  (encoder): LSTM(200 -&gt; 200, TNC, num_layers=2)
+  (out_layer): HybridSequential(
+    (0): Dropout(p = 0, axes=())
+    (1): Dense(None -&gt; 1, linear)
+  )
+)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Data-Pipeline">Data Pipeline<a class="anchor-link" href="#Data-Pipeline">&#182;</a></h1>
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">######################################### Data #########################################</span>
+<span class="c1"># train_dataset and test_dataset are both SimpleDataset objects,</span>
+<span class="c1"># which is a wrapper for lists and arrays.</span>
+<span class="n">train_dataset</span><span class="p">,</span> <span class="n">test_dataset</span> <span class="o">=</span> <span class="p">[</span><span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">IMDB</span><span class="p">(</span><span class="n">segment</span><span class="o">=</span><span class="n">segment</span><span class="p">)</span>
+                               <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tokenize using spaCy...&quot;</span><span class="p">)</span>
+<span class="c1"># tokenizer takes as input a string and outputs a list of tokens.</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SpacyTokenizer</span><span class="p">(</span><span class="s1">&#39;en&#39;</span><span class="p">)</span>
+<span class="c1"># length_clip takes as input a list and outputs a list with maximum length 500.</span>
+<span class="n">length_clip</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">ClipSequence</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="c1"># In the labeled train/test sets, a negative review has a score &lt;= 4</span>
+    <span class="c1"># out of 10, and a positive review has a score &gt;= 7 out of 10. Thus</span>
+    <span class="c1"># reviews with more neutral ratings are not included in the train/test</span>
+    <span class="c1"># sets. We labeled a negative review whose score &lt;= 4 as 0, and a</span>
+    <span class="c1"># positive review whose score &gt;= 7 as 1. As the neural ratings are not</span>
+    <span class="c1"># included in the datasets, we can simply use 5 as our threshold.</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">label</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="c1"># A token index or a list of token indices is</span>
+    <span class="c1"># returned according to the vocabulary.</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">vocab</span><span class="p">[</span><span class="n">length_clip</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">data</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Tokenize using spaCy...
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div></div></section><section>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_length</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">preprocess_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">()</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="c1"># Each sample is processed in an asynchronous manner.</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SimpleDataset</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">preprocess</span><span class="p">,</span> <span class="n">dataset</span><span class="p">))</span>
+        <span class="n">lengths</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SimpleDataset</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">get_length</span><span class="p">,</span> <span class="n">dataset</span><span class="p">))</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done! Tokenizing Time=</span><span class="si">{:.2f}</span><span class="s1">s, #Sentences=</span><span class="si">{}</span><span class="s1">&#39;</span>
+          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">lengths</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div></section><section>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#Data</span>
+<span class="n">train_dataset</span><span class="p">,</span> <span class="n">train_data_lengths</span> <span class="o">=</span> <span class="n">preprocess_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+<span class="n">test_dataset</span><span class="p">,</span> <span class="n">test_data_lengths</span> <span class="o">=</span> <span class="n">preprocess_dataset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">####################### DATA #######################</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Done! Tokenizing Time=6.09s, #Sentences=25000
+Done! Tokenizing Time=6.08s, #Sentences=25000
+
+####################### DATA #######################
+
+([0, 1409, 24, 9, 13139, 1717, 4, 61, 1117, 27, 2, 152, 62, 16, 98, 64, 2170, 80, 391, 180, 3, 91, 16, 11, 21820, 11, 4, 1196, 1230, 104, 7, 2, 2632, 13392, 409, 706, 8, 1907, 15, 0, 1409, 17, 7922, 24, 217, 3430, 8, 2564, 84, 24, 11, 21820, 11, 4, 13, 20391, 8, 3660, 7863, 3, 2, 0, 914, 55, 110, 594, 455, 109, 38, 18190, 5232, 57, 0, 3, 2, 0, 5, 2, 1147, 1309, 3, 68, 16731, 706, 5, 2, 1206, 70, 2561, 6, 38, 914, 4, 274, 70, 693, 2, 138, 7, 33, 9, 1838, 5718, 1650, 8, 3685, 197, 2, 391, 3, 70, 1297, 3163, 0, 27, 0, 1409, 4, 76, 3473, 220, 43, 0, 43, 70, 1921, 1914, 8, 0, 49, 5, 1903, 5232, 4, 0, 43, 17622, 8, 0, 1409, 4, 70, 9041, 15, 125, 3233, 5, 750, 507, 1229, 15, 0, 1409, 24, 754, 0, 4, 2493, 9, 18214, 15, 29, 24, 0, 365], 1, 165.0)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Training">Training<a class="anchor-link" href="#Training">&#182;</a></h1>
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">######################################### Train #########################################</span>
+<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">SigmoidBCELoss</span><span class="p">()</span>
+    <span class="n">total_L</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">total_sample_num</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_correct_num</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start_log_interval_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Begin Testing...&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">valid_length</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">mx</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">as_in_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span>
+        <span class="n">valid_length</span> <span class="o">=</span> <span class="n">valid_length</span><span class="o">.</span><span class="n">as_in_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">as_in_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">valid_length</span><span class="p">)</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="p">(</span><span class="n">output</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">total_L</span> <span class="o">+=</span> <span class="n">L</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">asscalar</span><span class="p">()</span>
+        <span class="n">total_sample_num</span> <span class="o">+=</span> <span class="n">label</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">total_correct_num</span> <span class="o">+=</span> <span class="p">(</span><span class="n">pred</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">asscalar</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[Batch </span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">] elapsed </span><span class="si">{:.2f}</span><span class="s1"> s&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">),</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_log_interval_time</span><span class="p">))</span>
+            <span class="n">start_log_interval_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">avg_L</span> <span class="o">=</span> <span class="n">total_L</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">total_sample_num</span><span class="p">)</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">total_correct_num</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">total_sample_num</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">avg_L</span><span class="p">,</span> <span class="n">acc</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div></div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Data-Loaders">Data Loaders<a class="anchor-link" href="#Data-Loaders">&#182;</a></h1>
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">collect_params</span><span class="p">(),</span>
+                            <span class="s1">&#39;ftml&#39;</span><span class="p">,</span>
+                            <span class="p">{</span><span class="s1">&#39;learning_rate&#39;</span><span class="p">:</span> <span class="n">learning_rate</span><span class="p">})</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">SigmoidBCELoss</span><span class="p">()</span>
+
+    <span class="c1"># Construct the DataLoader</span>
+    <span class="c1"># Pad data, stack label and lengths</span>
+    <span class="n">batchify_fn</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">batchify</span><span class="o">.</span><span class="n">Tuple</span><span class="p">(</span><span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">batchify</span><span class="o">.</span><span class="n">Pad</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                                          <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">batchify</span><span class="o">.</span><span class="n">Stack</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                                          <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">batchify</span><span class="o">.</span><span class="n">Stack</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+    <span class="n">batch_sampler</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">FixedBucketSampler</span><span class="p">(</span><span class="n">train_data_lengths</span><span class="p">,</span>
+                                                        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                                        <span class="n">num_buckets</span><span class="o">=</span><span class="n">bucket_num</span><span class="p">,</span>
+                                                        <span class="n">ratio</span><span class="o">=</span><span class="n">bucket_ratio</span><span class="p">,</span>
+                                                        <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">batch_sampler</span><span class="o">.</span><span class="n">stats</span><span class="p">())</span>
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">train_dataset</span><span class="p">,</span>
+                                             <span class="n">batch_sampler</span><span class="o">=</span><span class="n">batch_sampler</span><span class="p">,</span>
+                                             <span class="n">batchify_fn</span><span class="o">=</span><span class="n">batchify_fn</span><span class="p">)</span>
+    <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">test_dataset</span><span class="p">,</span>
+                                            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                            <span class="n">shuffle</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                            <span class="n">batchify_fn</span><span class="o">=</span><span class="n">batchify_fn</span><span class="p">)</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">collect_params</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div></div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Training-Loop">Training Loop<a class="anchor-link" href="#Training-Loop">&#182;</a></h1>
+</div>
+</div>
+</div><div class="fragment">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
+<span class="o">...</span>
+    <span class="c1"># Training/Testing</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="o">...</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+                <span class="c1"># Multi-gpu training.</span>
+                <span class="n">data_list</span><span class="p">,</span> <span class="n">label_list</span><span class="p">,</span> <span class="n">length_list</span> \
+                    <span class="o">=</span> <span class="p">[</span><span class="n">gluon</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">split_and_load</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">batch_axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">even_split</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                                                           <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">length</span><span class="p">]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">as_in_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+                <span class="n">label_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">as_in_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+                <span class="n">length_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">length</span><span class="o">.</span><span class="n">as_in_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+            <span class="o">...</span>
+            <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">valid_length</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">label_list</span><span class="p">,</span> <span class="n">length_list</span><span class="p">):</span>
+                <span class="n">valid_length</span> <span class="o">=</span> <span class="n">valid_length</span>
+                <span class="k">with</span> <span class="n">autograd</span><span class="o">.</span><span class="n">record</span><span class="p">():</span>
+                    <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">valid_length</span><span class="p">)</span>
+                    <span class="n">L</span> <span class="o">=</span> <span class="n">L</span> <span class="o">+</span> <span class="n">loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">as_in_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">L</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="c1"># Clip gradient</span>
+            <span class="k">if</span> <span class="n">grad_clip</span><span class="p">:</span>
+                <span class="n">gluon</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_global_norm</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+                                              <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">],</span> <span class="n">grad_clip</span><span class="p">)</span>
+            <span class="c1"># Update parameter</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">...</span>
+</pre></div>
 
 </div>
 </div>
@@ -12117,368 +12349,14 @@ a.anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li><code>preprocess_dataset</code> uses paralele processing using maximum number of CPUs to<ul>
-<li>run <code>preprocess</code>, and</li>
-<li>calculate length of each sentence</li>
-</ul>
-</li>
-</ul>
-
-</div>
-</div>
-</div></div></section><section>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[104]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Dataset preprocessing</span>
-<span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">label</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">length_clip</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span>
-
-<span class="k">def</span> <span class="nf">get_length</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-
-<span class="k">def</span> <span class="nf">preprocess_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">()</span>
-    <span class="n">dataset</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SimpleDataset</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">preprocess</span><span class="p">,</span> <span class="n">dataset</span><span class="p">))</span>
-    <span class="n">lengths</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SimpleDataset</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">get_length</span><span class="p">,</span> <span class="n">dataset</span><span class="p">))</span>
-    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done! Tokenizing Time=</span><span class="si">{:.2f}</span><span class="s1">s, #Sentences=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)))</span>
-    <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">lengths</span>
-
-<span class="c1"># Preprocess the dataset</span>
-<span class="n">train_dataset</span><span class="p">,</span> <span class="n">train_data_lengths</span> <span class="o">=</span> <span class="n">preprocess_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
-<span class="n">test_dataset</span><span class="p">,</span> <span class="n">test_data_lengths</span> <span class="o">=</span> <span class="n">preprocess_dataset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="c1">#Train</span>
+<span class="n">train</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
 </pre></div>
+<p><img src="./training_result.png" alt=""></p>
 
 </div>
 </div>
 </div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Done! Tokenizing Time=6.29s, #Sentences=25000
-Done! Tokenizing Time=6.04s, #Sentences=25000
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[105]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">train_dataset</span><span class="p">]</span>
-<span class="n">counter</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">count_tokens</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">train_seqs</span><span class="p">)))</span>
-<span class="n">vocab</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">Vocab</span><span class="p">(</span><span class="n">counter</span><span class="o">=</span><span class="n">counter</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">padding_token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eos_token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bos_token</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[106]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">t2i</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">vocab</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-<span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">()</span>
-<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">t2i</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">)</span>
-<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">t2i</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">)</span>
-<span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sentence0: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">length of sentence0: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][:],</span> <span class="n">train_data_lengths</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sentence1: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">length of sentence1: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">][:],</span> <span class="n">train_data_lengths</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>sentence0: [0, 2012, 8, 4, 1116, 231, 3, 51, 2311, 40, 1, 188, 67, 20, 59, 97, 6190, 49, 422, 133, 2, 160, 20, 13, 0, 13, 3, 374, 5063, 174, 9, 1, 5390, 6674, 498, 83, 7, 282, 12, 0, 2012, 15, 2042, 8, 88, 2661, 7, 714, 87, 8, 13, 0, 13, 3, 24, 0, 7, 2149, 0, 2, 1, 6661, 1519, 43, 68, 78, 234, 163, 79, 1286, 5847, 53, 0, 2, 1, 0, 6, 1, 241, 959, 2, 41, 3276, 83, 6, 1, 6964, 10, 689, 5, 79, 1519, 3, 312, 10, 220, 1, 412, 9, 73, 4, 1464, 3900, 836, 7, 3936, 212, 1, 422, 2, 10, 1304, 0, 0, 40, 0, 2012, 3, 145, 381, 384, 90, 0, 90, 10, 169, 162, 7, 9373, 36, 6, 148, 5847, 3, 0, 90, 9491, 7, 0, 2012, 3, 10, 561, 12, 130, 1528, 6, 82, 641, 118, 12, 0, 2012, 8, 259, 4345, 3, 257, 4, 2546, 12, 11, 8, 29, 38]
-length of sentence0: 165.0
-
-sentence1: [0, 26, 52, 0, 20, 750, 0, 3669, 28, 50, 91, 42, 1913, 22, 174, 25, 132, 4, 1636, 7, 365, 177, 27, 1, 1368, 12, 74, 353, 1187, 453, 43, 84, 347, 45, 183, 7, 422, 2, 178, 2, 52, 2417, 22, 1, 602, 3, 968, 96, 118, 6, 1, 3434, 20, 54, 4, 516, 1320, 194, 9407, 49, 211, 160, 20, 3419, 2, 1, 483, 27, 5241, 2, 0, 372, 7, 3595, 2, 2265, 2, 1, 0, 2, 0, 2, 52, 9407, 77, 46, 267, 35, 439, 7, 152, 64, 27, 1, 0, 18, 779, 65, 77, 30, 74, 391, 4, 2241, 7, 469, 27, 1, 2559, 22, 4, 3463, 248, 1, 0, 30, 353, 72, 45, 4, 392, 2, 1, 791, 752, 2, 4, 4470, 2, 1463, 27, 1, 1718, 2, 4, 1256, 2, 5, 347, 30, 353, 2987, 7, 78, 65, 11, 15, 44, 7, 35, 3434, 57, 281, 8, 0, 0, 15, 0, 18, 0, 2917, 26, 43, 4477, 28, 43, 417, 20, 0, 311, 4, 1104, 161, 43, 50, 347, 9, 1, 230, 388, 7632, 7, 106, 4, 2241, 21, 4, 0, 3096, 26, 0, 0, 28, 7, 78, 77, 37, 68, 469, 9, 1, 2559, 22, 3542, 566, 248, 1, 0, 128, 77, 0, 3099, 2, 37, 68, 56, 65, 37, 508, 21, 4, 766, 1325, 6, 254, 60, 4698, 3, 24, 2241, 15, 27, 142, 0, 8, 1413, 27, 1, 1368, 21, 4, 0, 27, 34, 4799, 7, 0, 34, 205, 904, 142, 37, 199, 29, 1631, 141, 1, 0, 3, 154, 15, 391, 1, 0, 0, 39, 4, 0, 138, 11, 15, 427, 27, 34, 0, 142, 0, 905, 97, 119, 620, 4, 269, 39, 1, 440, 6, 5285, 26, 0, 1915, 4088, 28, 42, 1324, 16, 3733, 43, 198, 4938, 191, 2617, 48, 392, 2, 5, 48, 9760, 0, 26, 2077, 4973, 28, 5, 0, 26, 0, 2611, 28, 43, 31, 492, 359, 7, 1, 2559, 3, 235, 203, 5511, 3, 0, 8, 29, 3, 154, 15, 32, 359, 7, 4998, 7069, 0, 44, 37, 353, 84, 70, 131, 1104, 142, 11, 15, 599, 52, 3635, 2, 604, 52, 35, 0, 18, 2143, 1, 139, 2242, 215, 5285, 5, 0, 17, 29, 1836, 7, 122, 2, 10, 272, 13, 1761, 0, 13, 7, 35, 36, 6, 3802, 2917, 53, 0, 123, 142, 2792, 7, 131, 4, 231, 2, 11, 307, 4, 4680, 541, 1174, 7, 34, 2720, 178, 160, 20, 0, 0, 2, 1466, 4864, 2, 52, 0, 22, 1, 602, 2, 7, 137, 65, 11, 15, 44, 316, 164, 5056, 191, 2617, 11, 1, 439, 295, 52, 27, 1, 97, 558, 254, 4, 410, 2241, 44, 41, 1104, 96, 56, 70, 46, 56, 29, 135, 65, 7, 56, 21, 79, 299, 3, 842, 46, 153, 226, 11, 7, 1, 3434, 418, 6, 841, 11, 44, 0, 9753, 18, 0, 454, 14, 23, 99, 6417, 30, 7, 365, 455, 3]
-length of sentence1: 490.0
-
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[33]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="n">train_data_loader</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">batchify_fn</span><span class="o">=</span><span class="n">batcify_fn</span><span class="p">,</span> 
-                                                          <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">last_batch</span><span class="o">=</span><span class="s1">&#39;rollover&#39;</span><span class="p">)</span>
-<span class="n">test_data_loader</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">batchify_fn</span><span class="o">=</span><span class="n">batcify_fn</span><span class="p">,</span>
-                                                            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">last_batch</span><span class="o">=</span><span class="s1">&#39;rollover&#39;</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[47]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">color_codes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[54]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span><span class="n">train_data_lengths</span><span class="p">[:],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[54]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>&lt;matplotlib.axes._subplots.AxesSubplot at 0x7fd77deaed30&gt;</pre>
-</div>
-
-</div>
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-
-
-<div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
-"
->
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[107]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">gluonnlp.data</span> <span class="k">import</span> <span class="n">batchify</span> <span class="k">as</span> <span class="n">bf</span>
-<span class="n">batcify_fn</span> <span class="o">=</span> <span class="n">bf</span><span class="o">.</span><span class="n">Tuple</span><span class="p">(</span><span class="n">bf</span><span class="o">.</span><span class="n">Pad</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">bf</span><span class="o">.</span><span class="n">Stack</span><span class="p">())</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[108]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">c</span> <span class="o">=</span> <span class="p">([</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">13</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">batcify_fn</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt output_prompt">Out[108]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>(
- [[ 1  2  3  0  0  0  0  0]
-  [ 4  5  0  0  0  0  0  0]
-  [ 6  7  8  9 10 11 12 13]]
- &lt;NDArray 3x8 @cpu_shared(0)&gt;, 
- [0 1 1]
- &lt;NDArray 3 @cpu_shared(0)&gt;)</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[55]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">batch_sampler</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">FixedBucketSampler</span><span class="p">(</span><span class="n">train_data_lengths</span><span class="p">,</span> 
-                                                    <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
-                                                    <span class="n">num_buckets</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> 
-                                                    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[60]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">batch_sampler</span><span class="o">.</span><span class="n">stats</span><span class="p">())</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>FixedBucketSampler:
-  sample_num=25000, batch_num=261
-  key=[44, 68, 92, 116, 140, 164, 188, 212, 236, 260, 284, 308, 332, 356, 380, 404, 428, 452, 476, 500]
-  cnt=[139, 842, 955, 1003, 2278, 3408, 2585, 2029, 1559, 1254, 1075, 925, 766, 645, 605, 524, 468, 376, 354, 3210]
-  batch_size=[100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[61]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">batch_sampler</span> <span class="o">=</span> <span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">FixedBucketSampler</span><span class="p">(</span><span class="n">train_data_lengths</span><span class="p">,</span> 
-                                                    <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
-                                                    <span class="n">num_buckets</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> 
-                                                    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                                    <span class="n">ratio</span><span class="o">=.</span><span class="mi">5</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">batch_sampler</span><span class="o">.</span><span class="n">stats</span><span class="p">())</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>FixedBucketSampler:
-  sample_num=25000, batch_num=210
-  key=[44, 68, 92, 116, 140, 164, 188, 212, 236, 260, 284, 308, 332, 356, 380, 404, 428, 452, 476, 500]
-  cnt=[139, 842, 955, 1003, 2278, 3408, 2585, 2029, 1559, 1254, 1075, 925, 766, 645, 605, 524, 468, 376, 354, 3210]
-  batch_size=[568, 367, 271, 215, 178, 152, 132, 117, 105, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_data_loader</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_sampler</span><span class="o">=</span><span class="n">batch_sampler</span><span class="p">,</span> <span class="n">batchify_fn</span><span class="o">=</span><span class="n">batcify_fn</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div></section></section>
 </div>
 </div>
 

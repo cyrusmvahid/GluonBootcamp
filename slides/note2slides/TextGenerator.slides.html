@@ -11908,6 +11908,33 @@ a.anchor-link {
 <h1 id="CharLSTM">CharLSTM<a class="anchor-link" href="#CharLSTM">&#182;</a></h1>
 </div>
 </div>
+</div><div class="fragment">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>CharLSTM is a simple LSTM network that creates output documents based on probability of character level sequences in the training data.</li>
+<li>CharLSTM dictionary is a char-level dictionary</li>
+<li>CharLSRM language model is created base on tokenizing input file into charachters.</li>
+</ul>
+
+</div>
+</div>
+</div></div></section></section><section><section>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Objective">Objective<a class="anchor-link" href="#Objective">&#182;</a></h1><ul>
+<li>Create a dataset that downloads and prepares teh data</li>
+<li>Create a char level dataset using gluonnlp pre-processing capabilities</li>
+<li>Create an LSTM network using gluon.rnn</li>
+<li>Training the model</li>
+</ul>
+
+</div>
+</div>
 </div></section></section><section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -11919,7 +11946,7 @@ a.anchor-link {
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[173]:</div>
+<div class="prompt input_prompt">In&nbsp;[37]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">gluonnlp</span> <span class="k">as</span> <span class="nn">nlp</span>
@@ -11931,31 +11958,31 @@ a.anchor-link {
 <span class="kn">from</span> <span class="nn">mxnet.gluon.data</span> <span class="k">import</span> <span class="n">SimpleDataset</span>
 <span class="kn">from</span> <span class="nn">gluonnlp.data.utils</span> <span class="k">import</span> <span class="n">_get_home_dir</span>
 <span class="kn">from</span> <span class="nn">gluonnlp.data.registry</span> <span class="k">import</span> <span class="n">register</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">math</span>
 </pre></div>
 
 </div>
 </div>
 </div>
 
-</div></div><div class="fragment">
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>When passing keyword arguments to <code>register</code>, they are checked to be valid keyword arguments for the registered 
-Dataset class constructor and are saved in the registry.'''</p>
-
-</div>
-</div>
 </div></div></section></section><section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Download-and-Prepare-Data">Download and Prepare Data<a class="anchor-link" href="#Download-and-Prepare-Data">&#182;</a></h1>
+<h1 id="Download-and-Prepare-Data">Download and Prepare Data<a class="anchor-link" href="#Download-and-Prepare-Data">&#182;</a></h1><p>In thi section we:</p>
+<ul>
+<li>derive a class from SimpleDataset</li>
+<li>Download source of TimeMachine book from an Internet location</li>
+<li>Strip the text to only core text by removing all legal info that do not support training of a language model based on the book.</li>
+<li>Split the data to training and test and save them locally</li>
+</ul>
+
 </div>
 </div>
-</div><div class="fragment">
+</div></section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
@@ -11982,6 +12009,16 @@ Dataset class constructor and are saved in the registry.'''</p>
 
 </div>
 </div>
+</div><div class="fragment">
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>When passing keyword arguments to <code>register</code>, they are checked to be valid keyword arguments for the registered 
+Dataset class constructor and are saved in the registry.'''</p>
+
+</div>
+</div>
 </div></div></section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -11991,7 +12028,7 @@ Dataset class constructor and are saved in the registry.'''</p>
         <span class="n">data_file_name</span><span class="p">,</span> <span class="n">data_hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_file</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_segment</span><span class="p">]</span>
         <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">data_file_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">check_sha1</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data_hash</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
             <span class="n">download</span><span class="p">(</span><span class="s1">&#39;http://archive.org/stream/thetimemachine00035gut/35.txt&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;35.txt&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">raw_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -12027,13 +12064,19 @@ Dataset class constructor and are saved in the registry.'''</p>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="DataSet-and-Batch-Generator">DataSet and Batch Generator<a class="anchor-link" href="#DataSet-and-Batch-Generator">&#182;</a></h1>
+<h1 id="DataSet-and-Batch-Generator">DataSet and Batch Generator<a class="anchor-link" href="#DataSet-and-Batch-Generator">&#182;</a></h1><p>In this section we create a dataset for iterating over the data:</p>
+<ul>
+<li>The dataset is derived from SimpleDataset and provides us with dataset capabilities</li>
+<li>The class is capably of batchifying our data and returning a vectorized version of the book in batch sizes</li>
+<li>The class returns a Back Propagation Through Time batchifier that in essense is out data iterator and returns an NDArray as an enumurable object that includes data and target for training.</li>
+</ul>
+
 </div>
 </div>
-</div><div class="fragment">
+</div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[102]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">CharLevelDataSet</span><span class="p">(</span><span class="n">SimpleDataset</span><span class="p">):</span>
@@ -12057,7 +12100,6 @@ Dataset class constructor and are saved in the registry.'''</p>
         <span class="k">return</span> <span class="n">SimpleDataset</span><span class="p">(</span><span class="n">batches</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">bptt</span><span class="p">),</span> <span class="p">:],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]))</span>
         
 
-<span class="n">nlp</span><span class="o">.</span><span class="n">data</span><span class="o">.</span>
     
             
 </pre></div>
@@ -12066,7 +12108,7 @@ Dataset class constructor and are saved in the registry.'''</p>
 </div>
 </div>
 
-</div></div></section><section>
+</div></section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
@@ -12107,7 +12149,7 @@ for more information and source code please check <a href="https://github.com/dm
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[191]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">]</span>
@@ -12141,7 +12183,7 @@ length = 3, overlap = 2: [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5], [4, 5, 6],
 </div></div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[206]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">nd</span><span class="o">.</span><span class="n">random_normal</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
@@ -12165,13 +12207,13 @@ length = 3, overlap = 2: [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5], [4, 5, 6],
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>a.shape= (5, 5)
 length = 3, overlap = 1: [
-[[-1.88121688 -0.48236853 -0.0410547   0.32565448 -1.16651702]
- [ 0.20766489 -1.60068631 -0.33250362 -0.36500821 -0.4170818 ]
- [ 0.67592829 -0.48124811 -1.44484794 -0.40208578 -1.3330071 ]]
+[[ 0.32510808 -1.30023408  0.3679345   1.45342624  0.24154152]
+ [ 0.47898006  0.96885103 -1.02182448 -0.06812762 -0.31868345]
+ [-0.17634277  0.35655284  0.74419165  0.77874237  0.60878229]]
 &lt;NDArray 3x5 @cpu(0)&gt;, 
-[[ 0.67592829 -0.48124811 -1.44484794 -0.40208578 -1.3330071 ]
- [ 0.24919313 -0.35250196 -0.46159557 -1.61733854  0.65237534]
- [-2.08035088 -0.8373692  -0.58245718 -0.73683733  0.57604754]]
+[[-0.17634277  0.35655284  0.74419165  0.77874237  0.60878229]
+ [ 1.0741756   0.06642842  0.84869862 -0.80038017 -0.16882208]
+ [ 0.93632793  0.35744399  0.77932847 -1.01030731 -0.39157307]]
 &lt;NDArray 3x5 @cpu(0)&gt;]
 </pre>
 </div>
@@ -12191,11 +12233,10 @@ length = 3, overlap = 1: [
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[175]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">vocab_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="o">.</span><span class="n">idx_to_token</span><span class="p">)</span>
-<span class="n">num_embd</span> <span class="o">=</span> <span class="mi">256</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">num_embd</span> <span class="o">=</span> <span class="mi">256</span>
 <span class="n">num_hidden</span> <span class="o">=</span> <span class="mi">512</span>
 <span class="n">num_layers</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">opt</span> <span class="o">=</span> <span class="s1">&#39;sgd&#39;</span>
@@ -12232,7 +12273,7 @@ length = 3, overlap = 1: [
 <h1 id="Data-Pipeline">Data Pipeline<a class="anchor-link" href="#Data-Pipeline">&#182;</a></h1><ol>
 <li>Downnload and split the data file.</li>
 <li>Instantiating datasets objects from <code>CharLevelDataset</code> in order to be able to create batches.</li>
-<li>Creating vocabulary by instantiating </li>
+<li>Creating vocabulary by instantiating a gluonnlp.Vocab object </li>
 </ol>
 
 </div>
@@ -12240,7 +12281,7 @@ length = 3, overlap = 1: [
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[177]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#Downloading and splitting data files</span>
@@ -12268,7 +12309,7 @@ length = 3, overlap = 1: [
 </div></div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[178]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;traindata: </span><span class="si">{}</span><span class="se">\n\n</span><span class="s2">testdata: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">train_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">test_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
@@ -12341,7 +12382,7 @@ testdata: (
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[159]:</div>
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">LSTMModel</span><span class="p">(</span><span class="n">gluon</span><span class="o">.</span><span class="n">Block</span><span class="p">):</span>
@@ -12387,7 +12428,7 @@ testdata: (
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[207]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">LSTMModel</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="o">.</span><span class="n">idx_to_token</span><span class="p">),</span> <span class="n">num_embd</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">num_hidden</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -12404,28 +12445,28 @@ testdata: (
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[207]:</div>
+<div class="prompt output_prompt">Out[26]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>lstmmodel9_ (
-  Parameter lstmmodel9_embedding0_weight (shape=(68, 256), dtype=float32)
-  Parameter lstmmodel9_lstm0_l0_i2h_weight (shape=(2048, 256), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l0_h2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l0_i2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l0_h2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l1_i2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l1_h2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l1_i2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l1_h2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l2_i2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l2_h2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l2_i2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_lstm0_l2_h2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
-  Parameter lstmmodel9_dense0_weight (shape=(68, 512), dtype=float32)
-  Parameter lstmmodel9_dense0_bias (shape=(68,), dtype=float32)
+<pre>lstmmodel0_ (
+  Parameter lstmmodel0_embedding0_weight (shape=(68, 256), dtype=float32)
+  Parameter lstmmodel0_lstm0_l0_i2h_weight (shape=(2048, 256), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l0_h2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l0_i2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l0_h2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l1_i2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l1_h2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l1_i2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l1_h2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l2_i2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l2_h2h_weight (shape=(2048, 512), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l2_i2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_lstm0_l2_h2h_bias (shape=(2048,), dtype=&lt;class &#39;numpy.float32&#39;&gt;)
+  Parameter lstmmodel0_dense0_weight (shape=(68, 512), dtype=float32)
+  Parameter lstmmodel0_dense0_bias (shape=(68,), dtype=float32)
 )</pre>
 </div>
 
@@ -12539,7 +12580,7 @@ testdata: (
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[161]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">collect_params</span><span class="p">()</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">mx</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">Xavier</span><span class="p">(),</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span> <span class="n">force_reinit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -12560,7 +12601,7 @@ testdata: (
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[162]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">collect_params</span><span class="p">(),</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
@@ -12582,7 +12623,7 @@ testdata: (
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[163]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">SoftmaxCrossEntropyLoss</span><span class="p">()</span>
@@ -12612,7 +12653,7 @@ testdata: (
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[164]:</div>
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">detach</span><span class="p">(</span><span class="n">hidden</span><span class="p">):</span>
@@ -12638,7 +12679,7 @@ testdata: (
 </div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[165]:</div>
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data_source</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
@@ -12666,7 +12707,7 @@ testdata: (
 </div></div><div class="fragment">
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[125]:</div>
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">data_source</span><span class="o">=</span><span class="n">test_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span><span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -12682,13 +12723,13 @@ testdata: (
 
 <div class="output_area">
 
-<div class="prompt output_prompt">Out[125]:</div>
+<div class="prompt output_prompt">Out[32]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>4.21955379853613</pre>
+<pre>4.2192995191808551</pre>
 </div>
 
 </div>
@@ -12741,10 +12782,10 @@ testdata: (
 </div></div></section><section>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[148]:</div>
+<div class="prompt input_prompt">In&nbsp;[39]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">train_data</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span> <span class="n">val_data</span><span class="o">=</span><span class="n">test_data</span><span class="p">,</span> <span class="n">test_data</span><span class="o">=</span><span class="n">test_data</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">train_data</span><span class="o">=</span><span class="n">train_data</span><span class="p">,</span> <span class="n">val_data</span><span class="o">=</span><span class="n">test_data</span><span class="p">,</span> <span class="n">test_data</span><span class="o">=</span><span class="n">test_data</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12761,10 +12802,16 @@ testdata: (
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>[Epoch 0] throughput 842.32 samples/s
-[Epoch 0] time cost 1.23s, valid loss 3.07, valid ppl 21.58
-test loss 3.07, test ppl 21.58
-Total training throughput 616.87 samples/s
+<pre>[Epoch 0] throughput 865.52 samples/s
+[Epoch 0] time cost 1.21s, valid loss 4.17, valid ppl 64.41
+test loss 4.17, test ppl 64.41
+[Epoch 1] throughput 859.77 samples/s
+[Epoch 1] time cost 1.21s, valid loss 4.14, valid ppl 62.96
+test loss 4.14, test ppl 62.96
+[Epoch 2] throughput 857.14 samples/s
+[Epoch 2] time cost 1.22s, valid loss 4.12, valid ppl 61.55
+test loss 4.12, test ppl 61.55
+Total training throughput 553.28 samples/s
 </pre>
 </div>
 </div>
@@ -12772,7 +12819,7 @@ Total training throughput 616.87 samples/s
 </div>
 </div>
 
-</div></section></section>
+</div>
 </div>
 </div>
 
