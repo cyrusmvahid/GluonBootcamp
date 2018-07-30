@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
-  TrainingInstanceType:
-    Description: Instance type to launch trained production model endpoint with. 
+  NotebookInstanceType:
+    Description: Instance type for Notebook instance. 
     Type: String
-    Default: ml.c4.xlarge
+    Default: ml.t2.medium
   ProductionInstanceType:
     Description: Instance type to launch trained production model endpoint with. 
     Type: String
@@ -22,11 +22,23 @@ Parameters:
     Default: sagemaker-cfn-demo
 
 Resources:
+
+  CFNNotebookInstanceLifeCycleConfig:
+    Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
+    Properties:
+      NotebookInstanceLifecycleConfigName: !Join ["-", ["install-gluoncv", !Ref "AWS::StackName"]]
+      OnStart: 
+        - Content: IyEvYmluL2Jhc2gNCg0KL2hvbWUvZWMyLXVzZXIvYW5hY29uZGEzL2VudnMvcHl0aG9uMy9iaW4vcHl0aG9uIC0tdmVyc2lvbg==
+      OnCreate: 
+        - Content: IyEvYmluL2Jhc2gNCg0KL2hvbWUvZWMyLXVzZXIvYW5hY29uZGEzL2VudnMvcHl0aG9uMy9iaW4vcGlwIGluc3RhbGwgZ2x1b25jdg==
+
   CFNNotebookInstance:
     Type: "AWS::SageMaker::NotebookInstance"
+    DependsOn: CFNNotebookInstanceLifeCycleConfig
     Properties:
-      NotebookInstanceName: "SageMaker-CFNDemo"
-      InstanceType: "ml.t2.medium"
+      NotebookInstanceName: !Join ["-", ["CFNDemoNotebookInstance", !Ref "AWS::StackName"]]
+      LifecycleConfigName: !GetAtt CFNNotebookInstanceLifeCycleConfig.NotebookInstanceLifecycleConfigName
+      InstanceType: !Ref NotebookInstanceType
       RoleArn: !Ref SageMakerExecutionRole
 
 Outputs:
