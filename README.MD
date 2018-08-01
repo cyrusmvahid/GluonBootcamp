@@ -39,8 +39,7 @@ https://github.com/cyrusmvahid/GluonBootcamp.git`
 ### Day3
 |Title | Description | Duration | Presenter| 
 |:---  |:---         |:---      |:---      |
-|Profiling MXNet|Analysis of runtime code to
-identify performance bottlenecks|30 mins|Thom|
+|Profiling MXNet|Analysis of runtime code to identify performance bottlenecks|30 mins|Thom|
 |[Moving LSTNet to SageMaker(LAB)](labs/porting_lstnet_to_sagemaker/porting_lstnet_to_sagemaker.ipynb)|The LSTNet code will be ported to train on Amazon SageMaker using the Python SDK|90 mins|Eden|
 |[Distributed LSTNet on SageMaker(LAB)](labs/lstnet_multi_gpu_distributed/lstnet_multi_gpu_distributed.ipynb)|Participants will speed up the training of the LSTNet model with data distribution across multiple GPUs and hosts|30 mins|Eden|
 |SageMaker Automatic Model Tuning|A look at SageMaker's hyperparameter optimization features|60 mins|Thom|
